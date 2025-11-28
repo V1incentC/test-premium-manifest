@@ -1,0 +1,23 @@
+manifest:
+  remotes:
+    - name: ncs
+      url-base: https://github.com/nrfconnect
+    - name: my-github
+      url-base: https://github.com/V1incentC
+
+  projects:
+    # 1. The Public SDK (Headers + Switch Logic)
+    - name: test-company-sdk
+      remote: my-github
+      path: modules/lib/test-company-sdk
+      revision: main
+      import: true  # This pulls in NCS
+
+    # 2. The Private Source (The "Key")
+    - name: test-modem-source
+      remote: my-github
+      path: modules/lib/test-modem-source
+      revision: main
+
+  self:
+    path: config/manifest
