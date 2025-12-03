@@ -6,14 +6,24 @@ manifest:
       url-base: https://github.com/V1incentC
 
   projects:
-    # 1. The Public SDK (Headers + Switch Logic)
+    # 1. DEFINE THE OS HERE (The Boss)
+    # Since this is listed first/explicitly, it overrides whatever the library says.
+    - name: sdk-nrf
+      remote: ncs
+      path: nrf
+      revision: v3.1.1
+      import: true
+
+    # 2. The Public SDK
     - name: test-company-sdk
       remote: my-github
       path: modules/lib/test-company-sdk
       revision: main
-      import: true  # This pulls in NCS
+      # We still import it to get its dependencies (if any), 
+      # but its definition of 'sdk-nrf' will be IGNORED because we defined it above.
+      import: true 
 
-    # 2. The Private Source (The "Key")
+    # 3. The Private Source
     - name: test-modem-source
       remote: my-github
       path: modules/lib/test-modem-source
