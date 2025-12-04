@@ -1,0 +1,37 @@
+name: Reusable Firmware Build
+on:
+  workflow_call:
+    inputs:
+      board: {required: true, type: string}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/v1incentc/test-premium-manifest:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout App
+        uses: actions/checkout@v3
+        with: {path: application}
+
+      - name: Initialize Workspace
+        run: |
+          mkdir workspace && cd workspace
+          # Initialize from the App's own manifest!
+          west init -l ../application
+          west update
+
+      - name: Build Firmware
+        working-directory: workspace
+        run: |
+          # This builds the app located in ../application
+          west build -b ${{ inputs.board }} ../application
+
+      - name: Save Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-${{ inputs.board }}
+          path: workspace/build/zephyr/merged.hex
