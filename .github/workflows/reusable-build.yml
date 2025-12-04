@@ -1,37 +1,55 @@
 name: Reusable Firmware Build
+
 on:
   workflow_call:
     inputs:
-      board: {required: true, type: string}
+      board:
+        required: true
+        type: string
+      app-dir:
+        required: false
+        type: string
+        default: "application" 
 
 jobs:
   build:
     runs-on: ubuntu-latest
     container:
+      # Use your custom image
       image: ghcr.io/v1incentc/test-premium-manifest:latest
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
+    
     steps:
       - name: Checkout App
         uses: actions/checkout@v3
-        with: {path: application}
+        with:
+          # Check out the calling repo (Product A) into the folder specified
+          path: ${{ inputs.app-dir }}
 
       - name: Initialize Workspace
         run: |
-          mkdir workspace && cd workspace
-          # Initialize from the App's own manifest!
-          west init -l ../application
+          mkdir workspace
+          cd workspace
+          
+          # Initialize from the App's own manifest (Bootstrap)
+          # We point to the folder where we checked out the code
+          west init -l ../${{ inputs.app-dir }}
+          
+          # Download SDK + Libraries (as defined in premium manifest)
           west update
 
       - name: Build Firmware
         working-directory: workspace
         run: |
-          # This builds the app located in ../application
-          west build -b ${{ inputs.board }} ../application
+          # Build the app. 
+          # We point west to the source directory using the input variable.
+          west build -b ${{ inputs.board }} ../${{ inputs.app-dir }}
 
       - name: Save Artifact
         uses: actions/upload-artifact@v4
         with:
           name: firmware-${{ inputs.board }}
-          path: workspace/build/zephyr/merged.hex
+          # Path to hex file (Zephyr defaults to build/zephyr/merged.hex or zephyr.hex)
+          path: workspace/build/zephyr/zephyr.hex
