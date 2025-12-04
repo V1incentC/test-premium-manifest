@@ -51,13 +51,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: firmware-${{ inputs.board }}
-          # 'warn' means: If app_update.bin is missing (e.g. no bootloader), 
-          # don't fail the build, just warn us.
           if-no-files-found: warn
-          # We use a multi-line list to capture everything valuable
+          # Use recursive wildcards to find the files wherever Sysbuild hides them
           path: |
-            workspace/build/zephyr/merged.hex
-            workspace/build/zephyr/zephyr.hex
-            workspace/build/zephyr/app_update.bin
-            workspace/build/zephyr/dfu_application.zip
-            workspace/build/zephyr/zephyr.elf
+            workspace/build/**/*.hex
+            workspace/build/**/*.bin
+            workspace/build/**/*.zip
+            workspace/build/**/*.elf
