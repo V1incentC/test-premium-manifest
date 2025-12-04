@@ -43,16 +43,24 @@ jobs:
       - name: Build Firmware
         working-directory: workspace
         run: |
-          # Build the app. 
-          # We point west to the source directory using the input variable.
           west build -b ${{ inputs.board }} ../${{ inputs.app-dir }}
 
-      - name: Save Artifacts
+      # --- Sanitize the Name ---
+      - name: Generate Safe Artifact Name
+        id: safe-name
+        run: |
+          # Replace all slashes '/' with underscores '_'
+          # Input: nrf9160dk/nrf9160/ns -> Output: nrf9160dk_nrf9160_ns
+          SAFE_BOARD=$(echo "${{ inputs.board }}" | tr '/' '_')
+          echo "board=$SAFE_BOARD" >> $GITHUB_OUTPUT
+
+      # --- Use the Safe Name ---
+      - name: Save Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: firmware-${{ inputs.board }}
+          # Use the sanitized output from the previous step
+          name: firmware-${{ steps.safe-name.outputs.board }}
           if-no-files-found: warn
-          # Use recursive wildcards to find the files wherever Sysbuild hides them
           path: |
             workspace/build/**/*.hex
             workspace/build/**/*.bin
